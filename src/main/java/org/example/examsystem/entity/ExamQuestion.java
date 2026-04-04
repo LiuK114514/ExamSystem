@@ -35,4 +35,6 @@ public class ExamQuestion {
 
     @TableLogic
     private Integer isDeleted;
+
+    private String answerAnalysis;
 }

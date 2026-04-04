@@ -6,6 +6,7 @@ import lombok.extern.slf4j.Slf4j;
 import lombok.val;
 import org.apache.ibatis.annotations.Param;
 import org.example.examsystem.anno.Log;
+import org.example.examsystem.annotation.LoginUser;
 import org.example.examsystem.dto.AbnormalBehaviorDTO;
 import org.example.examsystem.dto.AnswerDTO;
 import org.example.examsystem.dto.ExamSubmitDTO;
@@ -72,22 +73,22 @@ public class ExamController {
      */
     @PostMapping("/my-exam/tester")
     public Result getTesterExams(
-
+            @LoginUser Long userId,
             @RequestParam(defaultValue = "1") int page,
-            @RequestParam(defaultValue = "10") int size
+            @RequestParam(defaultValue = "100") int size
     ){
-        if(examService.getTesterExams(3L,page,size)!=null){
-            return Result.ok(examService.getTesterExams(3L,page,size));
+        if(examService.getTesterExams(userId,page,size)!=null){
+            return Result.ok(examService.getTesterExams(userId,page,size));
         }else{
             return Result.fail("错误参数");
         }
     }
 
     @GetMapping("/my-exam/creator")
-    public Result getCreatorExam(
+    public Result getCreatorExam(@LoginUser Long userId,
                                  @RequestParam(defaultValue = "1") int page,
-                                 @RequestParam(defaultValue = "10") int size){
-        val result = examService.getCreatorExams(2L, page, size);
+                                 @RequestParam(defaultValue = "100") int size){
+        val result = examService.getCreatorExams(userId, page, size);
 
         if(result!=null){
             return Result.ok(result);
@@ -105,9 +106,8 @@ public class ExamController {
     @GetMapping("my-exam/details/{examId}")
     public Result getMyExamDetails(
             @PathVariable("examId") Long examId,
-            @RequestParam(required = false) Long userId
+            @LoginUser Long userId
     ){
-         userId = 3L;
         TesterExam testerExam = testerExamMapper.selectOne(
                 new LambdaQueryWrapper<TesterExam>()
                         .eq(TesterExam::getExamId, examId)
@@ -130,6 +130,7 @@ public class ExamController {
      */
     @GetMapping("/check")
     public Result checkExam(
+            @LoginUser Long userId,
             @RequestParam String code
     ){
         if(code.length()!=6){
@@ -153,7 +154,7 @@ public class ExamController {
         examSimpleInfoVO.setExamId(exam.getId());
         TesterExam testerExam = testerExamMapper.selectOne(
                 new LambdaQueryWrapper<TesterExam>().eq(TesterExam::getExamId, exam.getId())
-                        .eq(TesterExam::getStudentId, 1L)
+                        .eq(TesterExam::getStudentId, userId)
         );
 
         int status;
@@ -179,9 +180,8 @@ public class ExamController {
     @GetMapping("/{examId}/start")
     public Result  startExam(
             @PathVariable("examId") Long examId,
-            @RequestParam(value = "userId",required = false)  Long userId
+            @LoginUser Long userId
     ){
-        userId = 1L;
         // 首先先插考试记录，看考生是首次还是多次进入考试
         TesterExam testerExam = testerExamMapper.selectOne(
                 new LambdaQueryWrapper<TesterExam>()
@@ -232,7 +232,7 @@ public class ExamController {
      * @return RankInfoVO
      */
     @GetMapping("/rank/{examId}")
-    public Result getRank(@PathVariable("examId") Long examId, @RequestParam("userId") Long userId){
+    public Result getRank(@PathVariable("examId") Long examId,@LoginUser Long userId){
         return Result.ok(examService.getMyRank(examId,userId));
     }
 
@@ -276,9 +276,9 @@ public class ExamController {
     @Log(module = "考试管理", operationType = "提交异常", description = "提交考试异常行为记录")
     @PostMapping("/{examId}/submit/abnormal")
     public Result submitAbnormal(@PathVariable("examId") Long examId,
-                                 @RequestParam("userId") Long userId,
+                                 @LoginUser Long userId,
                                  @RequestBody List<AbnormalBehaviorDTO> list){
-        int result = abnormalBehaviorService.reportBehavior(examId,userId,list);
+        int result = abnormalBehaviorService.reportBehavior(userId,examId,list);
         return Result.ok(result);
     }
 
@@ -289,10 +289,12 @@ public class ExamController {
      */
     @Log(module = "考试管理", operationType = "交卷", description = "考生提交试卷")
     @PostMapping("/submit/paper")
-    public Result submitPaper( @RequestBody ExamSubmitDTO dto){
+    public Result submitPaper(
+            @RequestBody ExamSubmitDTO dto,
+            @LoginUser Long userId){
         // 先调用存Redis接口
 
-        examPaperService.submitExam(dto,1L);
+        examPaperService.submitExam(dto,userId);
         return Result.ok("交卷成功");
         // 之后交给定时任务
     }
@@ -306,9 +308,8 @@ public class ExamController {
     @Log(module = "考试管理", operationType = "暂存答案", description = "暂存考试答案")
     @PostMapping("/auto-save")
     public Result autoSaveExam(@RequestBody ExamSubmitDTO dto,
-                               @RequestParam(value = "userId",required = false) Long userId) {
+                               @LoginUser Long userId) {
         try {
-            userId = 1L;
             examPaperService.autoSaveExam(dto, userId);
             log.info("暂存成功");
             return Result.ok("暂存成功");
@@ -326,7 +327,7 @@ public class ExamController {
      */
     @GetMapping("/auto-save/{examId}")
     public Result getAutoSaveExam(@PathVariable("examId") Long examId,
-                                  @RequestParam(value = "userId",required = false) Long userId) {
+                                  @LoginUser Long userId) {
         try {
             TesterExam testerExam = testerExamMapper.selectOne(
                     new LambdaQueryWrapper<TesterExam>().eq(TesterExam::getExamId, examId)

@@ -108,7 +108,7 @@
     <select id="countSubjectiveQuestions" resultType="java.lang.Integer">
         SELECT COUNT(DISTINCT ar.question_id)
         FROM answer_record ar
-                 JOIN question q ON ar.question_id = q.id AND q.question_type = 5
+                 JOIN question q ON ar.question_id = q.id AND (q.question_type = 4 OR q.question_type = 5)
                  JOIN tester_exam te ON ar.student_exam_id = te.id
         WHERE te.exam_id = #{examId}
           AND te.is_deleted = 0
@@ -121,7 +121,7 @@
             ar.student_exam_id AS studentExamId,
             COUNT(*) AS reviewedCount
         FROM answer_record ar
-                 JOIN question q ON ar.question_id = q.id AND q.question_type = 5
+                 JOIN question q ON ar.question_id = q.id AND(q.question_type = 4 OR q.question_type = 5)
                  JOIN tester_exam te ON ar.student_exam_id = te.id
         WHERE te.exam_id = #{examId}
           AND ar.is_reviewed = 1

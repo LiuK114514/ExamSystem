@@ -36,7 +36,7 @@
         FROM wrong_question wt
         LEFT JOIN question q ON wt.question_id = q.id
         LEFT JOIN question_option qo ON q.id = qo.question_id
-        WHERE q.question_type = #{type}
+        WHERE q.question_type = 1
         GROUP BY wt.id, wt.student_id, wt.question_id, wt.wrong_count, 
                  wt.student_answer, wt.correct_answer, wt.note, 
                  wt.create_time, wt.update_time, q.question_type, q.content
@@ -57,6 +57,7 @@
         AND te.is_deleted = 0
         AND eq.is_deleted = 0
         AND q.is_deleted = 0
+        AND q.question_type = 1
         AND ar.final_score &lt; eq.score
         <if test="excludeQuestionIds != null and excludeQuestionIds.size() > 0">
             AND q.id NOT IN

@@ -22,18 +22,14 @@ public interface AnswerRecordMapper extends BaseMapper<AnswerRecord> {
 
     Integer countSubjectiveQuestions(@Param("examId") Long examId);
 
-    List<StudentReviewCount> countReviewedPerStudent(Long examId);
+    List<StudentReviewCount> countReviewedPerStudent(@Param("examId")Long examId);
 
-    Double sumFinalScore(Long studentExamId);
+    @Select("""
+    SELECT IFNULL(SUM(final_score),0)
+    FROM answer_record
+    WHERE student_exam_id = #{studentExamId}
+      AND is_deleted = 0
+""")
+    Double sumFinalScore(@Param("studentExamId") Long studentExamId);
 }
 
-//    List<StudentReviewCount> countReviewedPerStudent(@Param("examId")Long examId);
-//
-////    @Select("""
-//    SELECT IFNULL(SUM(final_score),0)
-//    FROM answer_record
-//    WHERE student_exam_id = #{studentExamId}
-//      AND is_deleted = 0
-//""")
-//    Double sumFinalScore(@Param("studentExamId") Long studentExamId);
-//}

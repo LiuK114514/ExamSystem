@@ -1,0 +1,16 @@
+spring:
+  datasource:
+    url: jdbc:mysql://192.168.226.101:3306/examsystem
+    username: root
+    password: 8196860155lK@
+
+  redis:
+    host: 192.168.226.101
+    port: 6379
+
+  mail:
+    host: smtp.qq.com
+    port: 465
+    username: 1358709071@qq.com
+    password: zamxwlzkxvjohegg
+    protocol: smtps

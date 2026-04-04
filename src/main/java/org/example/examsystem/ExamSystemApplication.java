@@ -7,7 +7,7 @@ import org.springframework.scheduling.annotation.EnableScheduling;
 
 @SpringBootApplication
 @MapperScan("org.example.examsystem.mapper")
-//@EnableScheduling
+@EnableScheduling
 public class ExamSystemApplication {
 
     public static void main(String[] args) {

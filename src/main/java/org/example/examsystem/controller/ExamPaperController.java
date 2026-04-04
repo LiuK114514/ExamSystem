@@ -3,6 +3,7 @@ package org.example.examsystem.controller;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import lombok.RequiredArgsConstructor;
 import org.example.examsystem.anno.Log;
+import org.example.examsystem.annotation.LoginUser;
 import org.example.examsystem.dto.JudgeRequest;
 import org.example.examsystem.dto.QuestionScoreDTO;
 import org.example.examsystem.entity.TesterExam;
@@ -54,7 +55,7 @@ public class ExamPaperController {
     @GetMapping("/{examId}/questions/{questionId}/details")
     public Result getQuestionDetails(@PathVariable("examId") Long examId,
                                      @PathVariable("questionId") Long questionId,
-                                     @RequestParam("userId") Long userId
+                                     @LoginUser Long userId
                                      ){
         return Result.ok(examPaperService.getReviewQuestionDetail(examId,questionId,userId));
     }

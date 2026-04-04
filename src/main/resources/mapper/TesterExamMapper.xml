@@ -110,7 +110,7 @@
                      FROM answer_record ar
                               JOIN question q ON ar.question_id = q.id
                      WHERE ar.student_exam_id = te.id
-                       AND q.question_type = 5
+                       AND (q.question_type = 4 OR q.question_type = 5)
                        AND ar.is_reviewed = 0
                        AND ar.is_deleted = 0
                  ) THEN 0 -- 存在未批阅的主观题，返回 0

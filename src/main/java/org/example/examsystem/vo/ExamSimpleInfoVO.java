@@ -15,7 +15,8 @@ public class ExamSimpleInfoVO {
     private Integer limitMinutes;
     private LocalDateTime startTime;
     private LocalDateTime endTime;
-    private String examCode;
+    private Integer examCode;
     private String realName;
     private Integer status;
+    private Boolean paperShow;
 }

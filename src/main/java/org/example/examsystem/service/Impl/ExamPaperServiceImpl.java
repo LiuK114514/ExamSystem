@@ -388,7 +388,7 @@ public class ExamPaperServiceImpl extends ServiceImpl<AnswerRecordMapper, Answer
 
             // 判断题目类型：5为主观题，其他为客观题
             Integer questionType = question.getQuestionType();
-            if (questionType != null && questionType == 5) {
+            if (questionType != null &&( questionType == 5 || questionType ==   4)) {
                 // 主观题：不自动判分，等待教师批阅
                 answerRecord.setAutoScore(0);
                 answerRecord.setIsReviewed(0); // 未批阅
@@ -489,9 +489,8 @@ public class ExamPaperServiceImpl extends ServiceImpl<AnswerRecordMapper, Answer
                 new LambdaUpdateWrapper<AnswerRecord>()
                         .eq(AnswerRecord::getStudentExamId, studentExamId)
                         .eq(AnswerRecord::getQuestionId, questionId)
-                        .eq(AnswerRecord::getIsReviewed, 0) // 防重复
                         .set(AnswerRecord::getTeacherScore, teacherScore)
-                        .setSql("final_score = auto_score + " + teacherScore)
+                        .setSql("final_score = teacher_score ")
                         .set(AnswerRecord::getIsReviewed, 1)
         );
     }

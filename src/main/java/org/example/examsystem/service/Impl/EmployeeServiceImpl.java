@@ -166,7 +166,7 @@ public class EmployeeServiceImpl implements EmployeeService {
     private String mailServiceFrom() {
         // 使用 spring.mail.username 作为发件人
         // 这里直接读取系统属性或环境变量也可，根据项目需求调整
-        return "2863848911@qq.com";
+        return "1358709071@qq.com";
     }
 }
 
