@@ -48,7 +48,7 @@ public class EmployeeServiceImpl implements EmployeeService {
         vo.setName(user.getRealName());
         vo.setUserName(user.getEmail());
         vo.setToken(token);
-
+        vo.setIsAdmin(String.valueOf(user.getRole() != null && user.getRole() == 0));
         return vo;
     }
 

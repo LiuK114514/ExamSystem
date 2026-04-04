@@ -11,6 +11,7 @@ public class EmployeeLoginVO {
     private String name;
     private String token;
     private String userName;
+    private String isAdmin;
 }
 
 
