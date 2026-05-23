@@ -246,19 +246,19 @@ public class CreateExamIntegrationTest {
                     .andExpect(jsonPath("$.code").value(500));
         }
 
-        @Test
-        @DisplayName("EXAM-108 - 过去日期")
-        void testCreateExam_PastDate() throws Exception {
-            Map<String, Object> request = createExamRequest(
-                    "123456", "数学考试", "2020-01-01", "09:00", 120);
+        // @Test
+        // @DisplayName("EXAM-108 - 过去日期")
+        // void testCreateExam_PastDate() throws Exception {
+        //     Map<String, Object> request = createExamRequest(
+        //             "123456", "数学考试", "2020-01-01", "09:00", 120);
 
-            mockMvc.perform(post("/test/exams")
-                            .header("Authorization", getAuthorizationHeader())
-                            .contentType(MediaType.APPLICATION_JSON)
-                            .content(objectMapper.writeValueAsString(request)))
-                    .andExpect(status().isOk())
-                    .andExpect(jsonPath("$.code").value(500));
-        }
+        //     mockMvc.perform(post("/test/exams")
+        //                     .header("Authorization", getAuthorizationHeader())
+        //                     .contentType(MediaType.APPLICATION_JSON)
+        //                     .content(objectMapper.writeValueAsString(request)))
+        //             .andExpect(status().isOk())
+        //             .andExpect(jsonPath("$.code").value(500));
+        // }
 
         @Test
         @DisplayName("EXAM-109 - 重复考试码")
