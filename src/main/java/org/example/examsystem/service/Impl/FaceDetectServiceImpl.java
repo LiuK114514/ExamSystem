@@ -41,8 +41,9 @@ public class FaceDetectServiceImpl implements FaceDetectService {
                     .invoke(null, protoFile.getAbsolutePath(), modelFile.getAbsolutePath());
 
             initialized = true;
-        } catch (Exception e) {
-            throw new RuntimeException("OpenCV初始化失败", e);
+        } catch (Throwable e) {
+            System.out.println("OpenCV初始化失败，人脸检测功能将不可用: " + e.getMessage());
+            initialized = false;
         }
     }
 
