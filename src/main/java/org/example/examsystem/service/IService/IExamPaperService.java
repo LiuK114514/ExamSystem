@@ -29,7 +29,7 @@ public interface IExamPaperService extends IService<AnswerRecord> {
      */
     ExamPaperDetailVO getPaperDetailForCreator(Long examId, Long creatorId);
 
-    void reviewOneQuestion(Long studentExamId,
+    int reviewOneQuestion(Long studentExamId,
                            Long questionId,
                            Double teacherScore);
 

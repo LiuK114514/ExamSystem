@@ -29,5 +29,7 @@ public class TeacherReviewQuestionDetailVO {
     private Double teacherScore;
 
     private Integer reviewed;      // 是否已批阅（来自 answer_record.is_reviewed）
+    //ai评分理由
+    private String aiReason;
 }
 

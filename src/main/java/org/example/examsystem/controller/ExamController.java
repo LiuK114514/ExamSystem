@@ -293,7 +293,6 @@ public class ExamController {
             @RequestBody ExamSubmitDTO dto,
             @LoginUser Long userId){
         // 先调用存Redis接口
-
         examPaperService.submitExam(dto,userId);
         return Result.ok("交卷成功");
         // 之后交给定时任务

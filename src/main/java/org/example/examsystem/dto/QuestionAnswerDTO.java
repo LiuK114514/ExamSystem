@@ -8,6 +8,7 @@ import lombok.Data;
 @Data
 public class QuestionAnswerDTO {
     private Long questionId;
+    private String content;
     private Integer questionType;
     private String correctAnswer;
     private Double score;

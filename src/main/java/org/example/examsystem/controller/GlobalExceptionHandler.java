@@ -28,6 +28,11 @@ public class GlobalExceptionHandler {
         return Result.fail(e.getMessage());
     }
 
+    @ExceptionHandler(UnauthenticatedException.class)
+    public Result handleUnauthenticatedException(UnauthenticatedException e) {
+        return Result.info(401, e.getMessage());
+    }
+
     @ExceptionHandler(RuntimeException.class)
     public Result handleRuntimeException(RuntimeException e) {
         log.error("运行时异常", e);

@@ -7,11 +7,7 @@ import com.baomidou.mybatisplus.core.toolkit.Wrappers;
 import com.baomidou.mybatisplus.extension.conditions.query.LambdaQueryChainWrapper;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import lombok.RequiredArgsConstructor;
-import org.example.examsystem.dto.AnswerDTO;
-import org.example.examsystem.dto.ExamSubmitDTO;
-import org.example.examsystem.dto.ExamSubmitMessage;
-import org.example.examsystem.dto.QuestionAnswerDTO;
-import org.example.examsystem.dto.StudentReviewCount;
+import org.example.examsystem.dto.*;
 import org.example.examsystem.entity.AnswerRecord;
 import org.example.examsystem.entity.Exam;
 import org.example.examsystem.entity.ExamQuestion;
@@ -24,12 +20,14 @@ import org.example.examsystem.mapper.QuestionAnswerMapper;
 import org.example.examsystem.mapper.QuestionMapper;
 import org.example.examsystem.mapper.TesterExamMapper;
 import org.example.examsystem.service.IService.IExamPaperService;
+import org.example.examsystem.utils.GradingUtils;
 import org.example.examsystem.vo.ExamPaperDetailVO;
 import org.example.examsystem.vo.PaperQuestionDetailVO;
 import org.example.examsystem.vo.ProgressVO;
 import org.example.examsystem.vo.QuestionDetailVO;
 import org.example.examsystem.vo.QuestionSimpleInfoVO;
 import org.example.examsystem.vo.TeacherReviewQuestionDetailVO;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.redis.core.*;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
@@ -56,7 +54,8 @@ public class ExamPaperServiceImpl extends ServiceImpl<AnswerRecordMapper, Answer
     private final StringRedisTemplate redisTemplate;
     private final ExamMapper examMapper;
     private final QuestionAnswerMapper questionAnswerMapper;
-
+    @Autowired
+    private SparkAiGradingService sparkAiGradingService;
     /**
      * 考生查看作答详细
      * @param examId 本场考试Id
@@ -387,22 +386,16 @@ public class ExamPaperServiceImpl extends ServiceImpl<AnswerRecordMapper, Answer
             answerRecord.setStudentAnswer(studentAnswerStr);
 
             // 判断题目类型：5为主观题，其他为客观题
-            Integer questionType = question.getQuestionType();
-            if (questionType != null &&( questionType == 5 || questionType ==   4)) {
-                // 主观题：不自动判分，等待教师批阅
-                answerRecord.setAutoScore(0);
-                answerRecord.setIsReviewed(0); // 未批阅
-                answerRecord.setFinalScore(0); // 初始分数为0
-            } else {
-                // 客观题：自动判分
-                boolean isCorrect = compareAnswers(studentAnswerStr, correctAnswer);
-                Double questionScore = question.getScore();
-                Integer autoScore = isCorrect ? questionScore.intValue() : 0;
+            GradingResult result = GradingUtils.grade(
+                    question,
+                    studentAnswerStr,
+                    sparkAiGradingService
+            );
 
-                answerRecord.setAutoScore(autoScore);
-                answerRecord.setIsReviewed(1); // 客观题自动批阅完成
-                answerRecord.setFinalScore(autoScore); // 客观题最终分数等于自动分数
-            }
+            answerRecord.setAutoScore(result.getScore());
+            answerRecord.setFinalScore(result.getScore());
+            answerRecord.setIsReviewed(result.getIsReviewed());
+            answerRecord.setAiReason(result.getReason());
 
             // 插入作答记录
             answerRecordMapper.insert(answerRecord);
@@ -478,13 +471,14 @@ public class ExamPaperServiceImpl extends ServiceImpl<AnswerRecordMapper, Answer
      * @param studentExamId 对应考试Id
      * @param questionId 问题Id
      * @param teacherScore 教师评分
+     * @return 受影响的行数
      */
     @Transactional
-    public void reviewOneQuestion(Long studentExamId,
+    public int reviewOneQuestion(Long studentExamId,
                                   Long questionId,
                                   Double teacherScore) {
 
-        answerRecordMapper.update(
+        return answerRecordMapper.update(
                 null,
                 new LambdaUpdateWrapper<AnswerRecord>()
                         .eq(AnswerRecord::getStudentExamId, studentExamId)

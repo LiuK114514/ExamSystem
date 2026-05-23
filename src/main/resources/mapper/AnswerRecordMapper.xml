@@ -15,6 +15,7 @@
             qa.correct_answer AS correctAnswer,
             ar.student_answer AS userAnswer,
             ar.final_score AS userScore,
+            ar.ai_reason AS aiReason,
             te.id AS studentExamId
         FROM exam_question eq
                  JOIN question q ON eq.question_id = q.id
@@ -41,7 +42,7 @@
         <result property="analysis" column="analysis"/>
         <result property="userAnswer" column="userAnswer"/>
         <result property="userScore" column="userScore"/>
-
+        <result property="aiReason" column="aiReason"/>
         <!-- 嵌套对象 -->
         <association property="questionSimpleInfoVO" javaType="org.example.examsystem.vo.QuestionSimpleInfoVO">
             <id property="questionId" column="questionId"/>
@@ -79,8 +80,8 @@
             ar.student_answer   AS studentAnswer,
             eq.score            AS score,
             ar.teacher_score    AS teacherScore,
-            ar.is_reviewed      AS reviewed
-
+            ar.is_reviewed      AS reviewed,
+            ar.ai_reason        AS aiReason
         FROM answer_record ar
                  JOIN tester_exam te
                       ON ar.student_exam_id = te.id

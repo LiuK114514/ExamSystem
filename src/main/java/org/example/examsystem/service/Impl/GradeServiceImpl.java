@@ -12,7 +12,7 @@ import org.springframework.stereotype.Service;
 
 @Service
 @RequiredArgsConstructor
-public class GradeServiceImpl extends ServiceImpl<TesterExamMapper, TesterExam> implements IGradeService {
+public class   GradeServiceImpl extends ServiceImpl<TesterExamMapper, TesterExam> implements IGradeService {
 
 
     private final TesterExamMapper testerExamMapper;

@@ -13,3 +13,7 @@ mybatis-plus:
 logging:
   level:
     org.example.examsystem: info
+
+spark:
+  api:
+    password: UHxnxXMcugqTZpXtZwnz:VBgaDukATLINpTZpGiLr

@@ -26,5 +26,7 @@ public class QuestionDetailVO {
     @JsonInclude(JsonInclude.Include.NON_NULL)
     // 该题得分
     private Double userScore;
+    //ai评分理由
+    private String aiReason;
 }
 

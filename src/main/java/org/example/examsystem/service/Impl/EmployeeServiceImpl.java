@@ -16,6 +16,7 @@ import org.springframework.util.StringUtils;
 
 import java.util.HashMap;
 import java.util.Map;
+import java.util.regex.Pattern;
 
 @Service
 @RequiredArgsConstructor
@@ -24,6 +25,14 @@ public class EmployeeServiceImpl implements EmployeeService {
     private final UserMapper userMapper;
     private final MailService mailService;
     private final VerificationCodeService verificationCodeService;
+
+    // 邮箱格式正则表达式
+    private static final Pattern EMAIL_PATTERN = Pattern.compile(
+            "^[A-Za-z0-9+_.-]+@([A-Za-z0-9.-]+\\.[A-Za-z]{2,})$"
+    );
+
+    // 密码最小长度
+    private static final int MIN_PASSWORD_LENGTH = 6;
 
     @Override
     public EmployeeLoginVO login(String username, String password) {
@@ -54,17 +63,30 @@ public class EmployeeServiceImpl implements EmployeeService {
 
     @Override
     public RegisterResponseVO register(String email, String password, String realName, Integer role, String verificationCode) {
+        // 参数基础校验
         if (!StringUtils.hasText(email) || !StringUtils.hasText(password)) {
             throw new IllegalArgumentException("邮箱或密码不能为空");
         }
         if (!StringUtils.hasText(verificationCode)) {
             throw new IllegalArgumentException("验证码不能为空");
         }
+
+        // 邮箱格式校验 (TC-102)
+        if (!EMAIL_PATTERN.matcher(email).matches()) {
+            throw new IllegalArgumentException("邮箱格式错误");
+        }
+
+        // 密码长度校验 (TC-103)
+        if (password.length() < MIN_PASSWORD_LENGTH) {
+            throw new IllegalArgumentException("密码长度不足，至少需要" + MIN_PASSWORD_LENGTH + "位");
+        }
+
+        // 验证码校验 (TC-104, TC-105, TC-107)
         if (!verificationCodeService.validate(email, verificationCode)) {
             throw new IllegalArgumentException("验证码错误或已过期");
         }
 
-        // 邮箱唯一性校验
+        // 邮箱唯一性校验 (TC-106)
         Long exists = userMapper.selectCount(
                 Wrappers.<User>lambdaQuery()
                         .eq(User::getEmail, email)
@@ -82,7 +104,7 @@ public class EmployeeServiceImpl implements EmployeeService {
             System.out.println("设置 realName: " + realName);
         } else {
             user.setRealName(email);
-            System.out.println("realName 为空，使用 email 作为默认值: " + email);
+            System.out.println("realName为空，使用 email 作为默认值: " + email);
         }
         // 注册时强制设置为用户（role=1），不允许通过注册接口创建管理员
         user.setRole(1);
@@ -90,7 +112,7 @@ public class EmployeeServiceImpl implements EmployeeService {
         if (rows == 0) {
             throw new RuntimeException("注册失败，请稍后再试");
         }
-        
+
         // 返回注册结果VO
         RegisterResponseVO responseVO = new RegisterResponseVO();
         responseVO.setUserId(user.getId());
@@ -105,7 +127,13 @@ public class EmployeeServiceImpl implements EmployeeService {
         if (!StringUtils.hasText(email)) {
             throw new IllegalArgumentException("邮箱不能为空");
         }
-        // 已存在则提示
+
+        // 邮箱格式校验
+        if (!EMAIL_PATTERN.matcher(email).matches()) {
+            throw new IllegalArgumentException("邮箱格式错误");
+        }
+
+        // 已存在则提示 (TC-106)
         Long exists = userMapper.selectCount(
                 Wrappers.<User>lambdaQuery()
                         .eq(User::getEmail, email)
@@ -114,9 +142,11 @@ public class EmployeeServiceImpl implements EmployeeService {
         if (exists != null && exists > 0) {
             throw new IllegalArgumentException("该邮箱已注册");
         }
+
+        // 生成验证码（带频率限制，会抛出异常如果过于频繁）(TC-109)
         String code = verificationCodeService.generate(email);
         mailService.sendSimpleMail(mailServiceFrom(), email, "考试系统注册验证码", "您的验证码为：" + code + "，5分钟内有效。");
-        
+
         // 返回发送验证码结果VO
         SendCodeResponseVO responseVO = new SendCodeResponseVO();
         responseVO.setMessage("验证码已发送到您的邮箱，请查收");

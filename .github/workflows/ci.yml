@@ -1,0 +1,60 @@
+name: ExamSystem CI
+
+on:
+  push:
+    branches: [ main, master, develop ]
+  pull_request:
+    branches: [ main, master, develop ]
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+    - uses: actions/checkout@v4
+
+    - name: Set up JDK 11
+      uses: actions/setup-java@v4
+      with:
+        java-version: '11'
+        distribution: 'temurin'
+        cache: maven
+
+    - name: Build with Maven
+      run: mvn -B clean package -DskipTests
+
+    - name: Run Unit Tests
+      run: mvn -B test -Dtest=ExamServiceTest,EmployeeServiceTest,GradingUtilsTest -Dspring.profiles.active=test
+
+    - name: Run Auth Integration Tests
+      run: mvn -B test -Dtest=AuthControllerIntegrationTest -Dspring.profiles.active=test
+
+    - name: Run CreateExam Integration Tests
+      run: mvn -B test -Dtest=CreateExamIntegrationTest -Dspring.profiles.active=test
+
+    - name: Run ExamCheck Integration Tests
+      run: mvn -B test -Dtest=ExamCheckIntegrationTest -Dspring.profiles.active=test
+
+    - name: Run ExamSubmit Integration Tests
+      run: mvn -B test -Dtest=ExamSubmitIntegrationTest -Dspring.profiles.active=test
+
+    - name: Run JudgeExam Integration Tests
+      run: mvn -B test -Dtest=JudgeExamIntegrationTest -Dspring.profiles.active=test
+
+    - name: Run All Tests and Generate Report
+      run: mvn -B test surefire-report:report -Dspring.profiles.active=test
+
+    - name: Upload Test Report
+      uses: actions/upload-artifact@v4
+      with:
+        name: test-report
+        path: target/site/surefire-report.html
+        if-no-files-found: warn
+
+    - name: Upload Detailed Test Results
+      uses: actions/upload-artifact@v4
+      if: always()
+      with:
+        name: test-results
+        path: target/surefire-reports/
+        if-no-files-found: warn

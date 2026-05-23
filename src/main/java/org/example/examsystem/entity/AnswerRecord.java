@@ -25,15 +25,15 @@ public class AnswerRecord {
     private String studentAnswer;
 
     // 客观题系统自动识别判分
-    private Integer autoScore;
+    private Double autoScore;
 
     // 主观题教师评分
-    private Integer teacherScore;
+    private Double teacherScore;
 
     // 是否已批阅 （0：未批 1：已批）
     private Integer isReviewed;
 
-    private Integer finalScore;
+    private Double finalScore;
 
     @TableField(fill = FieldFill.INSERT)
     private LocalDateTime createTime;
@@ -43,4 +43,6 @@ public class AnswerRecord {
 
     @TableLogic
     private Integer isDeleted;
+    @TableField
+    private String aiReason; // AI评分理由
 }

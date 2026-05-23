@@ -132,6 +132,9 @@ public class ExamServiceImpl extends ServiceImpl<ExamMapper,Exam> implements IEx
         if (!StringUtils.hasText(request.getExamName())) {
             throw new IllegalArgumentException("考试名称不能为空");
         }
+        if (request.getExamName().length() > 50) {
+            throw new IllegalArgumentException("考试名称不超过50个字符");
+        }
         if (!StringUtils.hasText(request.getExamCode())) {
             throw new IllegalArgumentException("考试码不能为空");
         }
@@ -140,6 +143,9 @@ public class ExamServiceImpl extends ServiceImpl<ExamMapper,Exam> implements IEx
         }
         if (request.getDuration() == null || request.getDuration() <= 0) {
             throw new IllegalArgumentException("考试时长必须大于0");
+        }
+        if (request.getDuration() > 600) {
+            throw new IllegalArgumentException("考试时长不能超过600分钟");
         }
         Integer examCodeInt;
         try {
