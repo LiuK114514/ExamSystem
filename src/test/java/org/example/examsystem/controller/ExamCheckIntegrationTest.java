@@ -171,7 +171,7 @@ public class ExamCheckIntegrationTest {
             mockMvc.perform(get("/exam/check")
                             .param("code", "123456"))
                     .andExpect(status().isOk())
-                    .andExpect(jsonPath("$.code").value(500));
+                    .andExpect(jsonPath("$.code").value(401));
         }
 
         @Test
@@ -181,7 +181,7 @@ public class ExamCheckIntegrationTest {
                             .header("Authorization", "Bearer invalid.token.here")
                             .param("code", "123456"))
                     .andExpect(status().isOk())
-                    .andExpect(jsonPath("$.code").value(500));
+                    .andExpect(jsonPath("$.code").value(401));
         }
     }
 
