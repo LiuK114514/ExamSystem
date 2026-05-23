@@ -15,6 +15,12 @@
         <mybatis-spring-boot.version>2.3.1</mybatis-spring-boot.version>
         <mybatis.version>3.5.15</mybatis.version>
     </properties>
+    <repositories>
+        <repository>
+            <id>jitpack.io</id>
+            <url>https://jitpack.io</url>
+        </repository>
+    </repositories>
     <dependencies>
         <dependency>
             <groupId>org.springframework.boot</groupId>
@@ -104,12 +110,15 @@
             <artifactId>aspectjweaver</artifactId>
             <version>1.9.21</version>
         </dependency>
+        <!-- OpenCV (仅本地开发需要，CI测试时排除) -->
+        <!--
         <dependency>
             <groupId>org.opencv</groupId>
             <artifactId>opencv</artifactId>
             <version>4.5.5</version>
             <scope>provided</scope>
         </dependency>
+        -->
 
         <!-- H2内存数据库，用于集成测试 -->
         <dependency>
@@ -164,5 +173,42 @@
             </plugin>
         </plugins>
     </build>
+
+    <profiles>
+        <profile>
+            <id>opencv</id>
+            <activation>
+                <activeByDefault>true</activeByDefault>
+            </activation>
+            <dependencies>
+                <dependency>
+                    <groupId>org.opencv</groupId>
+                    <artifactId>opencv</artifactId>
+                    <version>4.5.5</version>
+                    <scope>provided</scope>
+                </dependency>
+            </dependencies>
+        </profile>
+        <profile>
+            <id>no-opencv</id>
+            <activation>
+                <property>
+                    <name>!opencv</name>
+                </property>
+            </activation>
+            <build>
+                <plugins>
+                    <plugin>
+                        <artifactId>maven-surefire-plugin</artifactId>
+                        <configuration>
+                            <excludes>
+                                <exclude>**/FaceDetectServiceImplTest.java</exclude>
+                            </excludes>
+                        </configuration>
+                    </plugin>
+                </plugins>
+            </build>
+        </profile>
+    </profiles>
 
 </project>

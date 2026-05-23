@@ -21,28 +21,28 @@ jobs:
         cache: maven
 
     - name: Build with Maven
-      run: mvn -B clean package -DskipTests
+      run: mvn -B clean package -DskipTests -P!opencv
 
     - name: Run Unit Tests
-      run: mvn -B test -Dtest=ExamServiceTest,EmployeeServiceTest,GradingUtilsTest -Dspring.profiles.active=test
+      run: mvn -B test -Dtest=ExamServiceTest,EmployeeServiceTest,GradingUtilsTest -Dspring.profiles.active=test -P!opencv
 
     - name: Run Auth Integration Tests
-      run: mvn -B test -Dtest=AuthControllerIntegrationTest -Dspring.profiles.active=test
+      run: mvn -B test -Dtest=AuthControllerIntegrationTest -Dspring.profiles.active=test -P!opencv
 
     - name: Run CreateExam Integration Tests
-      run: mvn -B test -Dtest=CreateExamIntegrationTest -Dspring.profiles.active=test
+      run: mvn -B test -Dtest=CreateExamIntegrationTest -Dspring.profiles.active=test -P!opencv
 
     - name: Run ExamCheck Integration Tests
-      run: mvn -B test -Dtest=ExamCheckIntegrationTest -Dspring.profiles.active=test
+      run: mvn -B test -Dtest=ExamCheckIntegrationTest -Dspring.profiles.active=test -P!opencv
 
     - name: Run ExamSubmit Integration Tests
-      run: mvn -B test -Dtest=ExamSubmitIntegrationTest -Dspring.profiles.active=test
+      run: mvn -B test -Dtest=ExamSubmitIntegrationTest -Dspring.profiles.active=test -P!opencv
 
     - name: Run JudgeExam Integration Tests
-      run: mvn -B test -Dtest=JudgeExamIntegrationTest -Dspring.profiles.active=test
+      run: mvn -B test -Dtest=JudgeExamIntegrationTest -Dspring.profiles.active=test -P!opencv
 
     - name: Run All Tests and Generate Report
-      run: mvn -B test surefire-report:report -Dspring.profiles.active=test
+      run: mvn -B test surefire-report:report -Dspring.profiles.active=test -P!opencv
 
     - name: Upload Test Report
       uses: actions/upload-artifact@v4

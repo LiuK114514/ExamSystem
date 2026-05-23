@@ -1,92 +1,94 @@
 package org.example.examsystem.service.Impl;
 
-import io.lettuce.core.output.ScoredValueScanOutput;
 import org.example.examsystem.service.IService.FaceDetectService;
-import org.opencv.core.*;
-import org.opencv.dnn.Dnn;
-import org.opencv.dnn.Net;
-import org.opencv.imgcodecs.Imgcodecs;
-import org.opencv.imgproc.Imgproc;
-import org.opencv.objdetect.CascadeClassifier;
-import org.springframework.core.io.ClassPathResource;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnClass;
 import org.springframework.stereotype.Service;
-import org.springframework.util.ResourceUtils;
 
 import java.io.File;
-import java.io.InputStream;
-import java.nio.file.Files;
-import java.nio.file.StandardCopyOption;
-import java.util.Base64;
 
 @Service
+@ConditionalOnClass(name = "org.opencv.core.Mat")
 public class FaceDetectServiceImpl implements FaceDetectService {
-    // 单例，避免重复加载模型
-    private static final Net faceNet;
-    static {
-        // 加载 OpenCV 动态库
-        System.loadLibrary(Core.NATIVE_LIBRARY_NAME);
 
+    private Class<?> netClass;
+    private Class<?> dnnClass;
+    private Class<?> imgcodecsClass;
+    private Class<?> matClass;
+    private Class<?> scalarClass;
+    private Class<?> sizeClass;
+    private Class<?> matOfByteClass;
+    private Object faceNet;
+    private boolean initialized = false;
+
+    public FaceDetectServiceImpl() {
         try {
-            File protoFile = ResourceUtils.getFile(
-                    "classpath:dnn/deploy.prototxt.txt");
+            netClass = Class.forName("org.opencv.dnn.Net");
+            dnnClass = Class.forName("org.opencv.dnn.Dnn");
+            imgcodecsClass = Class.forName("org.opencv.imgcodecs.Imgcodecs");
+            matClass = Class.forName("org.opencv.core.Mat");
+            scalarClass = Class.forName("org.opencv.core.Scalar");
+            sizeClass = Class.forName("org.opencv.core.Size");
+            matOfByteClass = Class.forName("org.opencv.core.MatOfByte");
 
-            File modelFile = ResourceUtils.getFile(
-                    "classpath:dnn/res10_300x300_ssd_iter_140000.caffemodel");
+            System.loadLibrary("opencv_java455");
 
-            faceNet = Dnn.readNetFromCaffe(
-                    protoFile.getAbsolutePath(),
-                    modelFile.getAbsolutePath()
-            );
+            File protoFile = new File(
+                    getClass().getResource("/dnn/deploy.prototxt.txt").toURI());
+            File modelFile = new File(
+                    getClass().getResource("/dnn/res10_300x300_ssd_iter_140000.caffemodel").toURI());
 
+            faceNet = dnnClass.getMethod("readNetFromCaffe", String.class, String.class)
+                    .invoke(null, protoFile.getAbsolutePath(), modelFile.getAbsolutePath());
+
+            initialized = true;
         } catch (Exception e) {
-            throw new RuntimeException("DNN初始化失败", e);
+            throw new RuntimeException("OpenCV初始化失败", e);
         }
     }
 
     @Override
     public int detectFace(String base64) {
+        if (!initialized) {
+            return 0;
+        }
         try {
             if (base64.contains(",")) {
                 base64 = base64.substring(base64.indexOf(",") + 1);
             }
 
-            byte[] bytes = Base64.getDecoder().decode(base64);
+            byte[] bytes = java.util.Base64.getDecoder().decode(base64);
 
-            Mat mat = Imgcodecs.imdecode(new MatOfByte(bytes), Imgcodecs.IMREAD_COLOR);
+            Object mat = imgcodecsClass.getMethod("imdecode", matOfByteClass, int.class)
+                    .invoke(null, matOfByteClass.getConstructor(byte[].class).newInstance(bytes), 1);
 
-            if (mat.empty()) {
+            if ((Boolean) matClass.getMethod("empty").invoke(mat)) {
                 return 0;
             }
 
-            // 1. 预处理（DNN必须300x300）
-            Mat blob = Dnn.blobFromImage(
-                    mat,
-                    1.0,
-                    new Size(300, 300),
-                    new Scalar(104, 177, 123),
-                    false,
-                    false
-            );
+            Object blob = dnnClass.getMethod("blobFromImage", matClass, double.class, sizeClass, scalarClass, boolean.class, boolean.class)
+                    .invoke(null, mat, 1.0,
+                            sizeClass.getConstructor(double.class, double.class).newInstance(300.0, 300.0),
+                            scalarClass.getConstructor(double.class, double.class, double.class).newInstance(104.0, 177.0, 123.0),
+                            false, false);
 
-            // 2. 输入网络
-            faceNet.setInput(blob);
-            // 3. 前向推理
-            Mat detections = faceNet.forward();
+            netClass.getMethod("setInput", matClass).invoke(faceNet, blob);
+            Object detections = netClass.getMethod("forward").invoke(faceNet);
+
+            Object detectionMat = matClass.getMethod("reshape", int.class, int.class).invoke(detections, 1, matClass.getMethod("size", int.class).invoke(detections, 2));
+
             int faceCount = 0;
-            // 4. 解析结果
-            Mat detectionMat = detections.reshape(1, detections.size(2));
-            for (int i = 0; i < detectionMat.rows(); i++) {
-                double confidence = detectionMat.get(i, 2)[0];
+            int rows = (Integer) matClass.getMethod("rows").invoke(detectionMat);
+            for (int i = 0; i < rows; i++) {
+                Object result = matClass.getMethod("get", int.class, int.class).invoke(detectionMat, i, 2);
+                double confidence = ((double[]) result)[0];
                 if (confidence > 0.5) {
                     faceCount++;
                 }
             }
-            System.out.println("检测到人脸个数：" + faceCount);
             return faceCount;
 
         } catch (Exception e) {
             e.printStackTrace();
-            System.out.println("人脸检测失败: " + e.getMessage());
             return 0;
         }
     }
