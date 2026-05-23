@@ -1,6 +1,7 @@
 package org.example.examsystem;
 
 import org.example.examsystem.service.IService.FaceDetectService;
+import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
@@ -14,6 +15,7 @@ import java.util.Base64;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
+@Disabled("需要本地OpenCV环境才能运行，默认跳过")
 @SpringBootTest
 public class FaceDetectServiceTest {
     //将图像转为base64格式
