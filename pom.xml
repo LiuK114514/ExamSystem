@@ -108,6 +108,7 @@
             <groupId>org.opencv</groupId>
             <artifactId>opencv</artifactId>
             <version>4.5.5</version>
+            <scope>provided</scope>
         </dependency>
 
         <!-- H2内存数据库，用于集成测试 -->
@@ -131,12 +132,7 @@
         </dependencies>
     </dependencyManagement>
 
-    <repositories>
-        <repository>
-            <id>icemesh-open-cv</id>
-            <url>https://maven.icemesh.cn/repository/java-open-cv/</url>
-        </repository>
-    </repositories>
+
 
     <build>
         <plugins>
