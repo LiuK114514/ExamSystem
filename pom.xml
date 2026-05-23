@@ -199,11 +199,11 @@
             <build>
                 <plugins>
                     <plugin>
-                        <artifactId>maven-surefire-plugin</artifactId>
+                        <artifactId>maven-compiler-plugin</artifactId>
                         <configuration>
-                            <excludes>
+                            <testExcludes>
                                 <exclude>**/FaceDetectServiceImplTest.java</exclude>
-                            </excludes>
+                            </testExcludes>
                         </configuration>
                     </plugin>
                 </plugins>
