@@ -131,6 +131,13 @@
         </dependencies>
     </dependencyManagement>
 
+    <repositories>
+        <repository>
+            <id>icemesh-open-cv</id>
+            <url>https://maven.icemesh.cn/repository/java-open-cv/</url>
+        </repository>
+    </repositories>
+
     <build>
         <plugins>
             <plugin>
